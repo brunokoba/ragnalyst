@@ -1,3 +1,4 @@
+import { list } from '@vercel/blob';
 import {
   convertToCoreMessages,
   generateObject,
@@ -6,7 +7,6 @@ import {
   streamObject,
   streamText,
 } from 'ai';
-import { list } from '@vercel/blob';
 import { z } from 'zod';
 
 import { customModel } from '@/ai';
