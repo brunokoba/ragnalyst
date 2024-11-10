@@ -7,8 +7,8 @@ import { Suggestion } from '@/db/schema';
 import { UICanvas } from './canvas';
 
 type StreamingDelta = {
-  type: 'text-delta' | 'title' | 'id' | 'suggestion' | 'clear' | 'finish';
-  content: string | Suggestion;
+  type: 'text-delta' | 'title' | 'id' | 'suggestion' | 'clear' | 'finish' | 'files';
+  content: string | Suggestion | Array<{ url: string; pathname: string; downloadUrl: string; size: number; uploadedAt: string }>;
 };
 
 export function useCanvasStream({
@@ -84,6 +84,10 @@ export function useCanvasStream({
             ...draftCanvas,
             status: 'idle',
           };
+
+        case 'files':
+          console.log('Uploaded files:', delta.content);
+          return draftCanvas;
 
         default:
           return draftCanvas;

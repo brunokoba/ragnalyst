@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob";
+import { put, head, list } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -65,5 +65,40 @@ export async function POST(request: Request) {
       { error: "Failed to process request" },
       { status: 500 },
     );
+  }
+}
+
+export async function GET(request: Request) {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const fileUrl = searchParams.get("url");
+
+  if (!fileUrl) {
+    return NextResponse.json({ error: "No file URL provided" }, { status: 400 });
+  }
+
+  try {
+    const blob = await head(fileUrl);
+    return NextResponse.json(blob);
+  } catch (error) {
+    return NextResponse.json({ error: "File not found" }, { status: 404 });
+  }
+}
+
+export async function LIST(request: Request) {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { blobs } = await list();
+    return NextResponse.json({ files: blobs });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to list files" }, { status: 500 });
   }
 }

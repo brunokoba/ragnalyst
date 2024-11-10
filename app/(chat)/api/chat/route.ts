@@ -22,6 +22,7 @@ import {
 } from '@/db/queries';
 import { Suggestion } from '@/db/schema';
 import { generateUUID, sanitizeResponseMessages } from '@/lib/utils';
+import { list } from "@vercel/blob";
 
 export const maxDuration = 60;
 
@@ -61,6 +62,23 @@ export async function POST(request: Request) {
 
   const coreMessages = convertToCoreMessages(messages);
   const streamingData = new StreamData();
+
+  // Get list of uploaded files
+  try {
+    const { blobs } = await list();
+    streamingData.append({
+      type: 'files',
+      content: blobs.map(blob => ({
+        url: blob.url,
+        pathname: blob.pathname,
+        downloadUrl: blob.downloadUrl,
+        size: blob.size,
+        uploadedAt: blob.uploadedAt.toISOString() // Convert Date to string
+      }))
+    });
+  } catch (error) {
+    console.error('Failed to list files:', error);
+  }
 
   const result = await streamText({
     model: customModel(model.apiIdentifier),
