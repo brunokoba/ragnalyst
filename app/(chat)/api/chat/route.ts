@@ -6,6 +6,7 @@ import {
   streamObject,
   streamText,
 } from 'ai';
+import { list } from '@vercel/blob';
 import { z } from 'zod';
 
 import { customModel } from '@/ai';
@@ -59,12 +60,16 @@ export async function POST(request: Request) {
     return new Response('Model not found', { status: 404 });
   }
 
+  // Get list of uploaded files
+  const { blobs } = await list();
+  const fileList = blobs.map(blob => blob.pathname).join(', ');
+
   const coreMessages = convertToCoreMessages(messages);
   const streamingData = new StreamData();
 
   const result = await streamText({
     model: customModel(model.apiIdentifier),
-    system: modelId === 'gpt-4o-canvas' ? canvasPrompt : regularPrompt,
+    system: `${modelId === 'gpt-4o-canvas' ? canvasPrompt : regularPrompt}\nCurrently uploaded files: ${fileList}`,
     messages: coreMessages,
     maxSteps: 5,
     experimental_activeTools:
